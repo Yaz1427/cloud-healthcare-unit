@@ -1,0 +1,19 @@
+# Fins de ligne : LF pour tout ce qui tourne dans la VM Linux.
+# Un script .sh enregistré en CRLF sous Windows casse bash
+# (erreur « $'\r': command not found »).
+* text=auto
+*.sql        text eol=lf
+*.sh         text eol=lf
+*.py         text eol=lf
+*.md         text eol=lf
+*.properties text eol=lf
+*.example    text eol=lf
+
+# Fichiers binaires
+*.png   binary
+*.jpg   binary
+*.zip   binary
+*.docx  binary
+*.xlsx  binary
+*.pdf   binary
+*.pbix  binary

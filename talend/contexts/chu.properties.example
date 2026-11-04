@@ -1,0 +1,27 @@
+# Modèle du contexte Talend du projet CHU.
+# Copier ce fichier en chu.properties (ignoré par Git), puis le remplir.
+# Lu au lancement par tFileInputProperties, puis tContextLoad.
+
+# PostgreSQL, source S1 (base où DATA 2024 a été restaurée)
+pg_hote=localhost
+pg_port=5432
+pg_base=postgres
+pg_utilisateur=postgres
+pg_mot_de_passe=A_REMPLIR
+
+# VM Cloudera QuickStart
+hdfs_uri=hdfs://quickstart.cloudera:8020
+hive_hote=quickstart.cloudera
+hive_port=10000
+impala_hote=quickstart.cloudera
+impala_port=21050
+
+# Dossier local des fichiers S2, S3, S4 et du COG
+dossier_sources=C:/CHU/sources
+
+# Chargement
+date_chargement=2026-11-05
+annees_rechargees=2023,2024
+
+# Pseudonymisation : secret, jamais dans Git, sauvegardé à part
+sel=A_REMPLIR

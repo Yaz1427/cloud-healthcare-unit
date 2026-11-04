@@ -1,0 +1,49 @@
+# ---------------------------------------------------------------
+# Données : jamais dans Git (RGPD et taille).
+# Seuls les résultats agrégés de resultats/ sont versionnés.
+# ---------------------------------------------------------------
+data/
+donnees/
+*.backup
+*.dump
+*.parquet
+*.orc
+*.avro
+*.csv
+!resultats/**/*.csv
+deces*.txt
+*.zip
+!talend/export/*.zip
+
+# Power BI : le .pbix contient toutes les données importées
+*.pbix
+
+# ---------------------------------------------------------------
+# Secrets : sel de pseudonymisation, mots de passe
+# ---------------------------------------------------------------
+talend/contexts/*.properties
+.env
+*.key
+*.pem
+
+# ---------------------------------------------------------------
+# Talend et journaux
+# ---------------------------------------------------------------
+.metadata/
+workspace/
+temp/
+*.log
+
+# ---------------------------------------------------------------
+# Python, éditeurs, systèmes
+# ---------------------------------------------------------------
+__pycache__/
+*.pyc
+.venv/
+venv/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+~$*
