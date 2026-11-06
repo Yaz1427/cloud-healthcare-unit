@@ -7,6 +7,7 @@
 #   bash bench/run_bench.sh                 5 exécutions, configurations par défaut
 #   bash bench/run_bench.sh 3               3 exécutions
 #   bash bench/run_bench.sh 5 "avant partitions apres_hive apres_impala"
+#   REQUETES="kpi2 kpi3 q9" bash bench/run_bench.sh 1   une partie des requêtes
 #
 # Configurations :
 #   avant         Hive sur chu_bench_brut, conversions de jointure coupées
@@ -25,6 +26,7 @@ set -u
 
 NB_EXEC="${1:-5}"
 CONFIGS="${2:-avant apres_hive apres_impala}"
+REQUETES="${REQUETES:-}"
 HOTE="${HOTE:-quickstart.cloudera}"
 
 RACINE="$(cd "$(dirname "$0")/.." && pwd)"
@@ -83,6 +85,10 @@ for config in $CONFIGS; do
 
   for fichier in "$DOSSIER_REQ"/*.sql; do
     requete="$(basename "$fichier" .sql)"
+    # Liste restreinte si REQUETES est définie, sinon toutes les requêtes
+    if [ -n "$REQUETES" ] && [[ " $REQUETES " != *" $requete "* ]]; then
+      continue
+    fi
     # Les variantes sur agrégats n'existent que dans chu_dw
     if [ "$base" != "chu_dw" ] && [[ "$requete" == *_agregat ]]; then
       continue
