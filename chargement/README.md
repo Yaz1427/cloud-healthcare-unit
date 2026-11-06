@@ -6,6 +6,8 @@ Chemin de secours utilisé pour la maquette du livrable 2 : les règles de netto
 |---|---|---|
 | 1. Extraire DATA 2024 en fichiers Silver | `01_extraction_s1.sql` | PSQL Tool de pgAdmin, base `data2024` |
 | 2. Déposer les fichiers dans HDFS | `02_depot_hdfs.sh` | Terminal de la VM, racine du dépôt |
+| 3. Mesurer la qualité à la source | `03_qualite_source.sql` | PSQL Tool de pgAdmin, base `data2024` |
+| 4. Contrôler la Gold (sections 2, 3, 4 et 8 de J30) | `04_controles_gold.sql` | impala-shell, dans la VM |
 
 ## 1. Extraction (PostgreSQL)
 
