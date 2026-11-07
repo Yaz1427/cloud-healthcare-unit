@@ -1,0 +1,6 @@
+configuration;moteur;base;requete;execution;duree_s;duree_mur_s;statut
+apres_hive;hive;chu_dw;kpi2;1;108.022;117.731;ok
+apres_hive;hive;chu_dw;kpi3;1;125.031;136.951;ok
+apres_hive;hive;chu_dw;kpi5;1;2963.634;2972.562;ok
+apres_hive;hive;chu_dw;kpi6;1;;121.369;erreur
+apres_hive;hive;chu_dw;q9;1;;22.916;erreur

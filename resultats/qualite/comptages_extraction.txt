@@ -1,0 +1,10 @@
+         fichier         | lignes  
+-------------------------+---------
+ patient                 |  100000
+ professionnel           | 1048575
+ diagnostic              |   15490
+ consultation            | 1027157
+ hospitalisation         |    2479
+ etablissement           |    2472
+ hospitalisations brutes |    2479
+ consultations brutes    | 1027157

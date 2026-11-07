@@ -1,0 +1,57 @@
+
+
+fait;nb_lignes;orphelins_temps;orphelins_patient;orphelins_professionnel;orphelins_diagnostic;orphelins_etablissement
+fait_consultation;1027157;0;0;0;0;0
+fait;nb_lignes;orphelins_temps;orphelins_patient;orphelins_diagnostic;orphelins_etablissement
+fait_hospitalisation;2479;0;0;0;0
+fait;nb_lignes;orphelins_temps;orphelins_region
+fait_deces;0;NULL;NULL
+fait;nb_lignes;orphelins_temps;orphelins_etablissement
+fait_satisfaction;0;NULL;NULL
+table_gold;cle;nb_valeurs_en_double
+dim_diagnostic;code_diagnostic;0
+dim_diagnostic;id_diagnostic;0
+dim_etablissement;finess;0
+dim_etablissement;id_etablissement;0
+dim_patient;id_patient;0
+dim_patient;patient_pseudo;0
+dim_professionnel;id_professionnel;0
+dim_professionnel;identifiant_source;0
+dim_region;code_region;0
+dim_region;id_region;0
+dim_temps;id_temps;0
+fait_consultation;id_consultation;0
+fait_hospitalisation;id_hospitalisation;0
+fait_satisfaction;id_temps, id_etablissement (hors -1);0
+fait;nb_lignes;pct_patient_inconnu;pct_professionnel_inconnu;pct_diagnostic_inconnu;pct_etablissement_inconnu
+fait_consultation;1027157;0.00;0.00;0.00;100.00
+fait;nb_lignes;pct_patient_inconnu;pct_diagnostic_inconnu;pct_etablissement_inconnu
+fait_hospitalisation;2479;0.00;0.00;0.28
+fait;nb_lignes;pct_region_inconnue
+fait_deces;0;NULL
+fait;nb_lignes;pct_etablissement_inconnu
+fait_satisfaction;0;NULL
+annee;#Rows;#Files;Size;Bytes Cached;Cache Replication;Format;Incremental stats;Location
+2015;33896;4;633.99KB;NOT CACHED;NOT CACHED;PARQUET;false;hdfs://quickstart.cloudera:8020/user/hive/warehouse/chu_dw.db/fait_consultation/annee=2015
+2016;184308;4;3.32MB;NOT CACHED;NOT CACHED;PARQUET;false;hdfs://quickstart.cloudera:8020/user/hive/warehouse/chu_dw.db/fait_consultation/annee=2016
+2017;133403;4;2.30MB;NOT CACHED;NOT CACHED;PARQUET;false;hdfs://quickstart.cloudera:8020/user/hive/warehouse/chu_dw.db/fait_consultation/annee=2017
+2018;160373;4;2.94MB;NOT CACHED;NOT CACHED;PARQUET;false;hdfs://quickstart.cloudera:8020/user/hive/warehouse/chu_dw.db/fait_consultation/annee=2018
+2019;87497;4;1.57MB;NOT CACHED;NOT CACHED;PARQUET;false;hdfs://quickstart.cloudera:8020/user/hive/warehouse/chu_dw.db/fait_consultation/annee=2019
+2020;162778;4;2.98MB;NOT CACHED;NOT CACHED;PARQUET;false;hdfs://quickstart.cloudera:8020/user/hive/warehouse/chu_dw.db/fait_consultation/annee=2020
+2021;145883;4;2.49MB;NOT CACHED;NOT CACHED;PARQUET;false;hdfs://quickstart.cloudera:8020/user/hive/warehouse/chu_dw.db/fait_consultation/annee=2021
+2022;101991;4;1.85MB;NOT CACHED;NOT CACHED;PARQUET;false;hdfs://quickstart.cloudera:8020/user/hive/warehouse/chu_dw.db/fait_consultation/annee=2022
+2023;17028;4;322.33KB;NOT CACHED;NOT CACHED;PARQUET;false;hdfs://quickstart.cloudera:8020/user/hive/warehouse/chu_dw.db/fait_consultation/annee=2023
+Total;1027157;36;18.39MB;0B;;;;
+annee;#Rows;#Files;Size;Bytes Cached;Cache Replication;Format;Incremental stats;Location
+2015;255;4;11.59KB;NOT CACHED;NOT CACHED;PARQUET;false;hdfs://quickstart.cloudera:8020/user/hive/warehouse/chu_dw.db/fait_hospitalisation/annee=2015
+2016;395;4;15.20KB;NOT CACHED;NOT CACHED;PARQUET;false;hdfs://quickstart.cloudera:8020/user/hive/warehouse/chu_dw.db/fait_hospitalisation/annee=2016
+2017;458;4;16.70KB;NOT CACHED;NOT CACHED;PARQUET;false;hdfs://quickstart.cloudera:8020/user/hive/warehouse/chu_dw.db/fait_hospitalisation/annee=2017
+2018;395;4;15.20KB;NOT CACHED;NOT CACHED;PARQUET;false;hdfs://quickstart.cloudera:8020/user/hive/warehouse/chu_dw.db/fait_hospitalisation/annee=2018
+2019;374;4;14.67KB;NOT CACHED;NOT CACHED;PARQUET;false;hdfs://quickstart.cloudera:8020/user/hive/warehouse/chu_dw.db/fait_hospitalisation/annee=2019
+2020;410;4;15.55KB;NOT CACHED;NOT CACHED;PARQUET;false;hdfs://quickstart.cloudera:8020/user/hive/warehouse/chu_dw.db/fait_hospitalisation/annee=2020
+2021;192;4;9.80KB;NOT CACHED;NOT CACHED;PARQUET;false;hdfs://quickstart.cloudera:8020/user/hive/warehouse/chu_dw.db/fait_hospitalisation/annee=2021
+Total;2479;28;98.71KB;0B;;;;
+annee;#Rows;#Files;Size;Bytes Cached;Cache Replication;Format;Incremental stats;Location
+Total;0;0;0B;0B;;;;
+annee;#Rows;#Files;Size;Bytes Cached;Cache Replication;Format;Incremental stats;Location
+Total;0;0;0B;0B;;;;

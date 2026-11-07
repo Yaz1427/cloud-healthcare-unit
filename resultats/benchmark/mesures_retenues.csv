@@ -1,0 +1,16 @@
+configuration;moteur;base;requete;execution;duree_s;duree_mur_s;statut
+avant;hive;chu_bench_brut;kpi2;1;195.922;205.403;ok
+avant;hive;chu_bench_brut;kpi3;1;192.145;201.775;ok
+avant;hive;chu_bench_brut;kpi5;1;185.918;195.736;ok
+avant;hive;chu_bench_brut;kpi6;1;191.449;200.724;ok
+avant;hive;chu_bench_brut;q9;1;208.635;216.237;ok
+apres_impala;impala;chu_dw;kpi2;1;4.87;5.401;ok
+apres_impala;impala;chu_dw;kpi3;1;0.88;1.362;ok
+apres_impala;impala;chu_dw;kpi5;1;1.24;1.461;ok
+apres_impala;impala;chu_dw;kpi6;1;16.06;16.331;ok
+apres_impala;impala;chu_dw;q9;1;28.65;28.825;ok
+apres_hive;hive;chu_dw;kpi2;1;108.022;117.731;ok
+apres_hive;hive;chu_dw;kpi3;1;125.031;136.951;ok
+apres_hive;hive;chu_dw;kpi6;1;198.134;207.881;ok
+apres_hive;hive;chu_dw;q9;1;125.84;129.490;ok
+apres_hive;hive;chu_dw;kpi5;1;153.578;161.525;ok

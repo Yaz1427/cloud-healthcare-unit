@@ -1,0 +1,20 @@
+Livrable 2 - maquette (Ayoub) : ce qui a ete fait et les ajustements
+
+Tout message.md a ete execute. Aucun script de Tilal n'a ete modifie ; seuls des reglages d'environnement ont ete ajoutes :
+1. HDFS : /datalake cree par hdfs et donne a cloudera (Permission denied a la racine).
+2. Gold (j20/j21) : OutOfMemory de la tache locale de map join (50 Mo) puis des mappers.
+   Relance avec : beeline --hiveconf hive.mapred.local.mem=1024 --hiveconf hive.mapjoin.smalltable.filesize=2000000
+   --hiveconf hive.auto.convert.join.noconditionaltask.size=2000000 --hiveconf mapreduce.map.memory.mb=2048
+   --hiveconf mapreduce.map.java.opts=-Xmx1600m (+ idem reduce). Resultat : j20 code=0, j21 code=0.
+3. Impala : limite memoire du demon passee de 512 Mo a 2 Go (Cloudera Manager) pour le controle d'unicite (section 3).
+4. HiveServer2 : memes reglages de map join en "safety valve" hive-site, pour le bench apres_hive.
+5. Incident VM : disque ext4 passe en lecture seule pendant le bench -> fsck, redemarrage, HDFS sorti du safe mode,
+   9 fichiers temporaires corrompus supprimes (aucune donnee Silver/Gold touchee). Comptages verifies apres coup.
+
+Resultats :
+- j30_gold_impala.csv : 0 orphelin sur les 4 faits, 0 doublon de cle (controles complets, code 0).
+- mesures_complet.csv : fusion des 3 fichiers mesures_*.csv (1 execution par requete, VM en mode lent Hyper-V/NEM).
+  avant (Hive brut) ~190-210 s ; apres_impala 0,9 a 29 s ; apres_hive 108 a 198 s.
+  kpi5 apres_hive : 1re mesure 2964 s (VM saturee, avant le reglage HiveServer2), remesuree a 154 s (mesures_2026-11-06_2258.csv) ; mesures_complet.csv garde 154 s.
+- Les fichiers mesures_2026-11-06_2152.csv contiennent aussi les 2 essais en erreur (avant le reglage HiveServer2).
+

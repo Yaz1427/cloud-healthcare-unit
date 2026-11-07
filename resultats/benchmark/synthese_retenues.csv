@@ -1,0 +1,6 @@
+requete;mediane_avant_s;mediane_apres_hive_s;mediane_apres_impala_s;gain_apres_hive;gain_apres_impala;sous_2_min_avant;sous_2_min_apres_hive;sous_2_min_apres_impala
+kpi2;195.92;108.02;4.87;1.8;40.2;non;oui;oui
+kpi3;192.15;125.03;0.88;1.5;218.3;non;non;oui
+kpi5;185.92;153.58;1.24;1.2;149.9;non;non;oui
+kpi6;191.45;198.13;16.06;1.0;11.9;non;non;oui
+q9;208.63;125.84;28.65;1.7;7.3;non;non;oui

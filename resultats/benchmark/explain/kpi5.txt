@@ -1,0 +1,276 @@
+### kpi5 : EXPLAIN DEPENDENCY
+Explain
+{"input_partitions":[{"partitionName":"chu_dw@fait_hospitalisation@annee=2019"}],"input_tables":[{"tablename":"chu_dw@fait_hospitalisation","tabletype":"MANAGED_TABLE"},{"tablename":"chu_dw@dim_patient","tabletype":"MANAGED_TABLE"}]}
+
+### kpi5 : EXPLAIN
+Explain
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-8 depends on stages: Stage-1, Stage-5 , consists of Stage-9, Stage-10, Stage-2
+  Stage-9 has a backup stage: Stage-2
+  Stage-6 depends on stages: Stage-9
+  Stage-3 depends on stages: Stage-2, Stage-6, Stage-7
+  Stage-10 has a backup stage: Stage-2
+  Stage-7 depends on stages: Stage-10
+  Stage-2
+  Stage-5 is a root stage
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: h
+            filterExpr: (annee = 2019) (type: boolean)
+            Statistics: Num rows: 374 Data size: 2992 Basic stats: COMPLETE Column stats: NONE
+            Sorted Merge Bucket Map Join Operator
+              condition map:
+                   Left Outer Join0 to 1
+              keys:
+                0 id_patient (type: int)
+                1 id_patient (type: int)
+              outputColumnNames: _col5, _col7, _col14
+              Select Operator
+                expressions: COALESCE(_col14,'I') (type: string), _col7 (type: int), CASE WHEN (_col5 is null) THEN ('inconnu') WHEN ((_col5 < 18)) THEN ('0-17') WHEN ((_col5 < 40)) THEN ('18-39') WHEN ((_col5 < 60)) THEN ('40-59') WHEN ((_col5 < 75)) THEN ('60-74') ELSE ('75+') END (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Group By Operator
+                  aggregations: sum(_col1)
+                  keys: _col0 (type: string), _col2 (type: string)
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string), _col1 (type: string)
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                    value expressions: _col2 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-8
+    Conditional Operator
+
+  Stage: Stage-9
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME1 
+          TableScan
+            HashTable Sink Operator
+              keys:
+                0 
+                1 
+
+  Stage: Stage-6
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              keys:
+                0 
+                1 
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Select Operator
+                expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint), round(((100 * _col2) / _col3), 2) (type: double)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string), _col1 (type: string)
+              sort order: ++
+              value expressions: _col2 (type: bigint), _col3 (type: double)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: bigint), VALUE._col1 (type: double)
+          outputColumnNames: _col0, _col1, _col2, _col3
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-10
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME 
+          TableScan
+            HashTable Sink Operator
+              keys:
+                0 
+                1 
+
+  Stage: Stage-7
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              keys:
+                0 
+                1 
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Select Operator
+                expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint), round(((100 * _col2) / _col3), 2) (type: double)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 
+            1 
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Select Operator
+            expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint), round(((100 * _col2) / _col3), 2) (type: double)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: fait_hospitalisation
+            filterExpr: (annee = 2019) (type: boolean)
+            Statistics: Num rows: 374 Data size: 2992 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: nb_hospitalisation (type: int)
+              outputColumnNames: nb_hospitalisation
+              Statistics: Num rows: 374 Data size: 2992 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: sum(nb_hospitalisation)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+
+### kpi5 : EXPLAIN (Impala)
+Per-Host Resource Reservation: Memory=400.00MB
+Per-Host Resource Estimates: Memory=52.00MB
+""
+PLAN-ROOT SINK
+|
+15:MERGING-EXCHANGE [UNPARTITIONED]
+|  order by: sexe ASC, tranche_age ASC
+|
+07:SORT
+|  order by: sexe ASC, tranche_age ASC
+|
+06:NESTED LOOP JOIN [CROSS JOIN, BROADCAST]
+|
+|--14:EXCHANGE [BROADCAST]
+|  |
+|  13:AGGREGATE [FINALIZE]
+|  |  output: sum:merge(nb_hospitalisation)
+|  |
+|  12:EXCHANGE [UNPARTITIONED]
+|  |
+|  05:AGGREGATE
+|  |  output: sum(nb_hospitalisation)
+|  |
+|  04:SCAN HDFS [chu_dw.fait_hospitalisation]
+|     partitions=1/7 files=4 size=14.67KB
+|
+11:AGGREGATE [FINALIZE]
+|  output: sum:merge(y.nb_hospitalisation)
+|  group by: y.sexe, y.tranche_age
+|
+10:EXCHANGE [HASH(y.sexe,y.tranche_age)]
+|
+03:AGGREGATE [STREAMING]
+|  output: sum(h.nb_hospitalisation)
+|  group by: coalesce(p.sexe, 'I'), CASE WHEN h.age_patient IS NULL THEN 'inconnu' WHEN h.age_patient < 18 THEN '0-17' WHEN h.age_patient < 40 THEN '18-39' WHEN h.age_patient < 60 THEN '40-59' WHEN h.age_patient < 75 THEN '60-74' ELSE '75+' END
+|
+02:HASH JOIN [RIGHT OUTER JOIN, PARTITIONED]
+|  hash predicates: p.id_patient = h.id_patient
+|  runtime filters: RF000 <- h.id_patient
+|
+|--09:EXCHANGE [HASH(h.id_patient)]
+|  |
+|  00:SCAN HDFS [chu_dw.fait_hospitalisation h]
+|     partitions=1/7 files=4 size=14.67KB
+|
+08:EXCHANGE [HASH(p.id_patient)]
+|
+01:SCAN HDFS [chu_dw.dim_patient p]
+   partitions=1/1 files=4 size=6.53MB
+   runtime filters: RF000 -> p.id_patient

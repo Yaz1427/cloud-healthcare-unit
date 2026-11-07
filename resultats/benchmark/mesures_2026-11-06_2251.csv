@@ -1,0 +1,3 @@
+configuration;moteur;base;requete;execution;duree_s;duree_mur_s;statut
+apres_hive;hive;chu_dw;kpi6;1;198.134;207.881;ok
+apres_hive;hive;chu_dw;q9;1;125.84;129.490;ok

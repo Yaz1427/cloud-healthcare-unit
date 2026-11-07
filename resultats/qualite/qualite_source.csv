@@ -1,0 +1,25 @@
+ordre;domaine;source;controle;nb_lignes;nb_total;pct
+1;completude;Consultation;Id_patient vide;0;1027157;0.00
+2;completude;Consultation;Id_prof_sante vide;0;1027157;0.00
+3;completude;Consultation;Code_diag vide;0;1027157;0.00
+4;completude;Consultation;Date vide (ligne ecartee, R4);0;1027157;0.00
+5;completude;Consultation;FINESS absent du schema (etablissement -1);1027157;1027157;100.00
+6;completude;Patient;Sexe vide ou non reconnu (I, R2);0;100000;0.00
+7;validite;Patient;Date de naissance illisible (R1);0;100000;0.00
+8;validite;Patient;Code postal inexploitable (departement vide, R6);0;100000;0.00
+9;completude;Hospitalisations.csv;Id_patient vide;0;2479;0.00
+10;validite;Hospitalisations.csv;Date_Entree vide ou illisible (ligne ecartee, R1/R4);0;2479;0.00
+11;validite;Hospitalisations.csv;Duree vide ou non numerique;0;2479;0.00
+12;finess;Hospitalisations.csv;FINESS vide;0;2479;0.00
+13;finess;Hospitalisations.csv;FINESS mal forme (R5);7;2479;0.28
+14;finess;Hospitalisations.csv;Etablissements distincts (FINESS valides);2472;2479;99.72
+15;doublons;Consultation;Num_consultation en double;0;1027157;0.00
+16;doublons;Patient;Id_patient en double;0;100000;0.00
+17;doublons;Professionnel_de_sante;Identifiant en double;0;1048575;0.00
+18;doublons;Diagnostic;Code_diag en double (apres R11);0;15490;0.00
+19;doublons;Hospitalisations.csv;Num_Hospitalisation en double;0;2479;0.00
+20;integrite;Consultation;Patient absent de Patient;0;1027157;0.00
+21;integrite;Consultation;Professionnel absent de Professionnel_de_sante;0;1027157;0.00
+22;integrite;Consultation;Diagnostic absent de Diagnostic;0;1027157;0.00
+23;integrite;Hospitalisations.csv;Patient absent de Patient;0;2479;0.00
+24;integrite;Hospitalisations.csv;Diagnostic absent de Diagnostic;0;2479;0.00
