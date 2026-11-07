@@ -1,6 +1,6 @@
 # Cloud Healthcare Unit : entrepôt de données décisionnel
 
-Entrepôt de données du groupe hospitalier CHU : un lakehouse en trois couches (Bronze, Silver, Gold) sur la VM Cloudera QuickStart du bloc, alimenté par Talend, interrogé avec Hive et Impala, restitué dans Power BI.
+Entrepôt de données du groupe hospitalier CHU : un lakehouse en trois couches (Bronze, Silver, Gold) sur la VM Cloudera QuickStart du bloc, interrogé avec Hive et Impala, restitué dans Power BI. Dans la maquette du livrable 2, la Silver est alimentée par des scripts SQL (`chargement/`) ; Talend reste la cible de production.
 
 Projet fil rouge du bloc « Stockage et Big Data », CESI FISA Informatique A4, groupe 3 : Tilal Messaoudi (chef de groupe), Nawfel, Ayoub et Georges.
 
@@ -39,8 +39,8 @@ flowchart LR
 | Outil | Version | Rôle |
 |---|---|---|
 | Cloudera QuickStart (CDH) | 5.12 | HDFS, YARN, Hive 1.1, Impala 2.9, Hue |
-| Talend Open Studio for Big Data | 7.3.1 | Ingestion (Bronze) et nettoyage (Silver) |
-| PostgreSQL | 14 | Source S1, restaurée depuis DATA 2024 |
+| Talend Open Studio for Big Data | 7.3.1 | Cible de production : ingestion (Bronze) et nettoyage (Silver) |
+| PostgreSQL | 18 | Source S1, restaurée depuis DATA 2024 |
 | Power BI Desktop | dernière version | Tableau de bord |
 
 ## Contenu du dépôt
@@ -56,8 +56,14 @@ flowchart LR
 │   ├── 05_agregats_stats.sql         agrégats mensuels et statistiques
 │   ├── 06_j22_impala_refresh.sql     J22 : métadonnées et statistiques d'Impala
 │   └── 07_j30_controles_qualite.sql  J30 : intégrité, complétude, FINESS, doublons
+├── chargement/                       chemin de la maquette, sans Talend
+│   ├── 01_extraction_s1.sql          DATA 2024 vers les fichiers Silver (PostgreSQL)
+│   ├── 02_depot_hdfs.sh              dépôt des fichiers dans HDFS
+│   ├── 03_qualite_source.sql         mesures de qualité à la source (PostgreSQL)
+│   └── 04_controles_gold.sql         contrôles de la Gold par Impala
 ├── bench/                            benchmark avant et après optimisation
 │   ├── 00_base_avant.sql             base chu_bench_brut, sans aucune optimisation
+│   ├── 00_base_avant_impala.sql      la même base, construite par Impala
 │   ├── 01_base_partitions.sql        base chu_bench_part, partitions seules (facultatif)
 │   ├── requetes/                     8 KPI, Q9 et 2 variantes sur agrégats
 │   ├── run_bench.sh                  exécutions répétées, durées écrites dans un CSV
@@ -78,7 +84,7 @@ Les scripts se lancent dans la VM, depuis la racine du dépôt : clone le dépô
    $HIVE -f sql/00_bases.sql
    $HIVE -f sql/01_silver_ddl.sql
    ```
-3. **Bronze puis Silver** : jobs Talend J01 à J05, puis J10 à J13 (ou J00_orchestrateur).
+3. **Silver** : dans la maquette, extraction dans PostgreSQL puis dépôt dans HDFS, voir [chargement/README.md](chargement/README.md). En production : jobs Talend J01 à J05, puis J10 à J13 (ou J00_orchestrateur).
 4. **Gold** :
    ```bash
    for s in 02_gold_ddl 03_j20_dimensions 04_j21_faits 05_agregats_stats; do
@@ -87,7 +93,7 @@ Les scripts se lancent dans la VM, depuis la racine du dépôt : clone le dépô
    ```
    Dans Talend, J20 et J21 exécutent les mêmes instructions, une par tHiveRow.
 5. **Impala** : `impala-shell -i quickstart.cloudera -f sql/06_j22_impala_refresh.sql`
-6. **Contrôles** : `$HIVE --force=true -f sql/07_j30_controles_qualite.sql`. Attendu : 0 orphelin et 0 doublon de clé.
+6. **Contrôles** : `$HIVE --force=true -f sql/07_j30_controles_qualite.sql`. Attendu : 0 orphelin et 0 doublon de clé. Dans la maquette, plus rapide : `chargement/03_qualite_source.sql` dans PostgreSQL et `chargement/04_controles_gold.sql` dans Impala.
 7. **Benchmark** : voir [bench/README.md](bench/README.md).
 
 ## Ce que couvre le livrable 2
@@ -96,9 +102,9 @@ Les scripts se lancent dans la VM, depuis la racine du dépôt : clone le dépô
 |---|---|
 | Scripts DDL et DML commentés et versionnés, avec l'intégrité référentielle | `sql/00` à `sql/05`, jobs dans `talend/`, contrôles dans `sql/07` |
 | Partitionnement et indexation, justifiés pour le moteur | `sql/02` (partitions, buckets triés, Parquet), `sql/05` (statistiques, agrégats) |
-| Rapport de qualité : complétude, FINESS, doublons | `sql/07`, résultats dans `resultats/qualite/` |
+| Rapport de qualité : complétude, FINESS, doublons | `sql/07`, `chargement/03` et `chargement/04`, résultats dans `resultats/qualite/` |
 | Au moins 5 requêtes de benchmark | `bench/requetes/` : les 8 KPI, une requête à 4 jointures et 2 variantes sur agrégats |
-| Graphiques avant/après et leur analyse | `bench/`, résultats dans `resultats/benchmark/` |
+| Graphiques avant/après et leur analyse | `bench/`, résultats dans `resultats/benchmark/` (graphique `avant_apres_retenues.png`) |
 
 ## Conventions
 
@@ -111,7 +117,7 @@ Les scripts se lancent dans la VM, depuis la racine du dépôt : clone le dépô
 ## Règles du dépôt (RGPD et sécurité)
 
 - Aucune donnée : ni sauvegarde, ni fichier source, ni fichier de l'INSEE, ni Parquet, ni `.pbix`. Le `.gitignore` les bloque.
-- Aucun secret : le sel de pseudonymisation et les mots de passe restent dans `talend/contexts/chu.properties`, ignoré par Git.
+- Aucun secret : le sel de pseudonymisation est saisi au lancement de l'extraction et n'est écrit nulle part ; pour Talend, les mots de passe restent dans `talend/contexts/chu.properties`, ignoré par Git.
 - Dans `resultats/`, seulement des agrégats : durées, comptages et pourcentages.
 
 ## Travailler à plusieurs
