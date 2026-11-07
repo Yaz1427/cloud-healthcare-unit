@@ -114,7 +114,7 @@ def afficher_markdown(requetes, configs, medianes):
         print(f"| {libelle(r).replace(chr(10), ' ')} | " + " | ".join(cellules) + " |")
 
 
-def tracer(chemin, requetes, configs, medianes, echelle_log):
+def tracer(chemin, requetes, configs, medianes, echelle_log, une_seule=False):
     couleurs = {c: coul for c, _, coul in CONFIGURATIONS}
     noms = {c: n for c, n, _ in CONFIGURATIONS}
     largeur = 0.8 / len(configs)
@@ -142,10 +142,13 @@ def tracer(chemin, requetes, configs, medianes, echelle_log):
     ax.set_xticklabels([libelle(r) for r in requetes], color=ENCRE_SECONDAIRE, fontsize=9)
     ax.tick_params(axis="y", colors=ENCRE_SECONDAIRE, labelsize=9)
     ax.tick_params(axis="both", length=0)
-    ax.set_ylabel("Durée médiane (secondes)" + (", échelle log" if echelle_log else ""),
+    # Avec une seule exécution par requête, il n'y a pas de médiane à annoncer
+    mesure = "Durée" if une_seule else "Durée médiane"
+    titre = ("Temps de réponse par requête (une exécution), avant et après optimisation"
+             if une_seule else "Temps de réponse médian par requête, avant et après optimisation")
+    ax.set_ylabel(mesure + " (secondes)" + (", échelle log" if echelle_log else ""),
                   color=ENCRE_SECONDAIRE, fontsize=10)
-    ax.set_title("Temps de réponse médian par requête, avant et après optimisation",
-                 color=ENCRE, fontsize=12, loc="left", pad=44)
+    ax.set_title(titre, color=ENCRE, fontsize=12, loc="left", pad=44)
     ax.grid(axis="y", color=GRILLE, linewidth=0.8, zorder=0)
     for cote in ("top", "right", "left"):
         ax.spines[cote].set_visible(False)
@@ -177,7 +180,8 @@ def main():
     synthese = args.mesures.with_name(f"synthese_{suffixe}.csv")
     graphique = args.mesures.with_name(f"avant_apres_{suffixe}.png")
     ecrire_synthese(synthese, requetes, configs, medianes)
-    tracer(graphique, requetes, configs, medianes, args.log)
+    une_seule = all(len(v) == 1 for v in durees.values())
+    tracer(graphique, requetes, configs, medianes, args.log, une_seule)
 
     afficher_markdown(requetes, configs, medianes)
     print(f"\nSynthèse : {synthese}\nGraphique : {graphique}")
