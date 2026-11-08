@@ -1,0 +1,332 @@
+// =====================================================================
+// mesures.dax : tables calculées, colonnes calculées et mesures du
+// tableau de bord CHU (Power BI Desktop)
+//
+// Reprend le PROSIT RETOUR 4, adapté aux données réellement chargées :
+// - les consultations n'ont pas de FINESS : le KPI 1 est conservé mais
+//   tout tombe sur l'établissement inconnu (-1), ce que le tableau de
+//   bord explique au lieu de le cacher ;
+// - la géographie des consultations et des séjours est celle du
+//   domicile du patient (colonne nom_region_patient de dim_patient,
+//   ajoutée dans Power Query) ;
+// - les décès 2019 sont aussi rapportés à la population de chaque
+//   région (populations légales 2019 de l'INSEE, colonne
+//   population_2019 de dim_region).
+//
+// Mode d'emploi : chaque bloc se colle tel quel, sans les lignes de
+// commentaire « // » si Power BI les refuse dans la barre de formule.
+// Format : les taux en Pourcentage à une décimale, les comptages en
+// Nombre entier, le score de satisfaction en Décimal à une décimale.
+// =====================================================================
+
+
+// ---------------------------------------------------------------------
+// 1. Tables calculées (Modélisation > Nouvelle table)
+// ---------------------------------------------------------------------
+
+// Table vide qui range toutes les mesures
+_Mesures = ROW ( "Masquer", BLANK () )
+
+// Axe commun des tranches d'âge (livrable 1, KPI 5)
+dim_tranche_age =
+DATATABLE (
+    "tranche_age", STRING,
+    "ordre", INTEGER,
+    {
+        { "0-17", 1 },
+        { "18-39", 2 },
+        { "40-59", 3 },
+        { "60-74", 4 },
+        { "75+", 5 },
+        { "Inconnu", 6 }
+    }
+)
+// Puis : colonne tranche_age > Outils de colonne > Trier par colonne > ordre
+
+
+// ---------------------------------------------------------------------
+// 2. Colonnes calculées (sélectionner la table > Nouvelle colonne)
+// ---------------------------------------------------------------------
+
+// Dans fait_consultation
+tranche_age =
+VAR age = fait_consultation[age_patient]
+RETURN
+    SWITCH (
+        TRUE (),
+        ISBLANK ( age ) || age < 0, "Inconnu",
+        age < 18, "0-17",
+        age < 40, "18-39",
+        age < 60, "40-59",
+        age < 75, "60-74",
+        "75+"
+    )
+
+// Dans fait_hospitalisation (même formule, sur age_patient)
+tranche_age =
+VAR age = fait_hospitalisation[age_patient]
+RETURN
+    SWITCH (
+        TRUE (),
+        ISBLANK ( age ) || age < 0, "Inconnu",
+        age < 18, "0-17",
+        age < 40, "18-39",
+        age < 60, "40-59",
+        age < 75, "60-74",
+        "75+"
+    )
+
+// Dans fait_deces (même formule, sur age_deces)
+tranche_age =
+VAR age = fait_deces[age_deces]
+RETURN
+    SWITCH (
+        TRUE (),
+        ISBLANK ( age ) || age < 0, "Inconnu",
+        age < 18, "0-17",
+        age < 40, "18-39",
+        age < 60, "40-59",
+        age < 75, "60-74",
+        "75+"
+    )
+
+// Dans dim_temps : jours déjà couverts par les consultations chargées,
+// pour comparer une année partielle à la même portion de l'année d'avant
+avec_donnees =
+dim_temps[id_temps] <= MAX ( fait_consultation[id_temps] )
+
+// Dans dim_etablissement : libellé unique (la commune est souvent vide)
+etablissement =
+dim_etablissement[raison_sociale] & " (" & dim_etablissement[finess] & ")"
+
+
+// ---------------------------------------------------------------------
+// 3. Mesures de base (table _Mesures > Nouvelle mesure)
+// ---------------------------------------------------------------------
+
+Nb consultations =
+SUM ( fait_consultation[nb_consultation] )
+
+Nb hospitalisations =
+SUM ( fait_hospitalisation[nb_hospitalisation] )
+
+Nb décès =
+SUM ( fait_deces[nb_deces] )
+
+Durée moyenne séjour =
+DIVIDE ( SUM ( fait_hospitalisation[duree_sejour] ), [Nb hospitalisations] )
+
+Âge moyen au décès =
+DIVIDE (
+    SUMX ( fait_deces, fait_deces[age_deces] * fait_deces[nb_deces] ),
+    CALCULATE ( [Nb décès], NOT ISBLANK ( fait_deces[age_deces] ) )
+)
+
+
+// ---------------------------------------------------------------------
+// 4. Les huit indicateurs du livrable 1
+// ---------------------------------------------------------------------
+
+// KPI 1 : non calculable avec DATA 2024 (pas de FINESS dans les
+// consultations) : la mesure existe, elle affiche 100 % pour l'inconnu
+Taux consultation établissement =
+DIVIDE (
+    [Nb consultations],
+    CALCULATE ( [Nb consultations], REMOVEFILTERS ( dim_etablissement ) )
+)
+
+// KPI 2
+Taux consultation diagnostic =
+DIVIDE (
+    [Nb consultations],
+    CALCULATE ( [Nb consultations], REMOVEFILTERS ( dim_diagnostic ) )
+)
+
+// KPI 3 : patients distincts, le patient inconnu (-1) exclu
+Patients hospitalisés =
+CALCULATE (
+    DISTINCTCOUNT ( fait_hospitalisation[id_patient] ),
+    KEEPFILTERS ( dim_patient[id_patient] <> -1 )
+)
+
+Patients suivis =
+CALCULATE (
+    COUNTROWS (
+        DISTINCT (
+            UNION (
+                DISTINCT ( fait_consultation[id_patient] ),
+                DISTINCT ( fait_hospitalisation[id_patient] )
+            )
+        )
+    ),
+    KEEPFILTERS ( dim_patient[id_patient] <> -1 )
+)
+
+Taux global hospitalisation =
+DIVIDE ( [Patients hospitalisés], [Patients suivis] )
+
+// KPI 4
+Taux hospitalisation diagnostic =
+DIVIDE (
+    [Nb hospitalisations],
+    CALCULATE ( [Nb hospitalisations], REMOVEFILTERS ( dim_diagnostic ) )
+)
+
+// KPI 5 : la mesure du croisement sexe x tranche d'âge (somme = 100 %)
+Part des hospitalisations =
+DIVIDE (
+    [Nb hospitalisations],
+    CALCULATE (
+        [Nb hospitalisations],
+        REMOVEFILTERS ( dim_tranche_age ),
+        REMOVEFILTERS ( dim_patient[sexe] )
+    )
+)
+
+Taux hospitalisation sexe =
+DIVIDE (
+    [Nb hospitalisations],
+    CALCULATE ( [Nb hospitalisations], REMOVEFILTERS ( dim_patient[sexe] ) )
+)
+
+Taux hospitalisation tranche âge =
+DIVIDE (
+    [Nb hospitalisations],
+    CALCULATE ( [Nb hospitalisations], REMOVEFILTERS ( dim_tranche_age ) )
+)
+
+// KPI 6
+Taux consultation professionnel =
+DIVIDE (
+    [Nb consultations],
+    CALCULATE ( [Nb consultations], REMOVEFILTERS ( dim_professionnel ) )
+)
+
+// KPI 7 : figé sur 2019, quel que soit le segment de période
+Décès 2019 =
+CALCULATE ( [Nb décès], REMOVEFILTERS ( dim_temps ), dim_temps[annee] = 2019 )
+
+Population 2019 =
+SUM ( dim_region[population_2019] )
+
+Décès 2019 pour 100 000 hab. =
+DIVIDE ( [Décès 2019], [Population 2019] ) * 100000
+
+// KPI 8 : moyenne pondérée par les répondants, lignes sans score exclues
+Satisfaction pondérée =
+DIVIDE (
+    SUMX (
+        fait_satisfaction,
+        fait_satisfaction[score_global] * fait_satisfaction[nb_repondants]
+    ),
+    CALCULATE (
+        SUM ( fait_satisfaction[nb_repondants] ),
+        NOT ISBLANK ( fait_satisfaction[score_global] )
+    )
+)
+
+Satisfaction 2020 =
+CALCULATE (
+    [Satisfaction pondérée],
+    REMOVEFILTERS ( dim_temps ),
+    dim_temps[annee] = 2020
+)
+
+Répondants 2020 =
+CALCULATE (
+    SUM ( fait_satisfaction[nb_repondants] ),
+    REMOVEFILTERS ( dim_temps ),
+    dim_temps[annee] = 2020
+)
+
+Établissements notés 2020 =
+CALCULATE (
+    COUNTROWS ( fait_satisfaction ),
+    REMOVEFILTERS ( dim_temps ),
+    dim_temps[annee] = 2020,
+    NOT ISBLANK ( fait_satisfaction[score_global] )
+)
+
+
+// ---------------------------------------------------------------------
+// 5. Mesures du récit : comparaisons à l'année précédente
+// ---------------------------------------------------------------------
+
+Consultations N-1 =
+CALCULATE (
+    [Nb consultations],
+    CALCULATETABLE (
+        SAMEPERIODLASTYEAR ( dim_temps[date_complete] ),
+        dim_temps[avec_donnees] = TRUE ()
+    )
+)
+
+Évolution consultations =
+DIVIDE ( [Nb consultations] - [Consultations N-1], [Consultations N-1] )
+
+Hospitalisations N-1 =
+CALCULATE (
+    [Nb hospitalisations],
+    CALCULATETABLE (
+        SAMEPERIODLASTYEAR ( dim_temps[date_complete] ),
+        dim_temps[avec_donnees] = TRUE ()
+    )
+)
+
+Évolution hospitalisations =
+DIVIDE ( [Nb hospitalisations] - [Hospitalisations N-1], [Hospitalisations N-1] )
+
+Titre synthèse =
+VAR annee_choisie = SELECTEDVALUE ( dim_temps[annee] )
+RETURN
+    IF ( ISBLANK ( annee_choisie ), "Sur la période", "En " & annee_choisie )
+        & " : "
+        & FORMAT ( [Taux global hospitalisation], "0.0 %" )
+        & " des patients suivis ont été hospitalisés"
+
+Titre décès =
+"Décès en 2019 : " & FORMAT ( [Décès 2019], "#,##0" )
+    & ", soit " & FORMAT ( [Décès 2019 pour 100 000 hab.], "0" )
+    & " pour 100 000 habitants"
+
+
+// ---------------------------------------------------------------------
+// 6. Graphe générique paramétrable (paramètres de champs)
+// Modélisation > Nouveau paramètre > Champs : Power BI écrit lui-même
+// ce code quand on coche les champs ; il est donné pour vérification.
+// ---------------------------------------------------------------------
+
+Axe analyse = {
+    ( "Région du patient", NAMEOF ( 'dim_patient'[nom_region_patient] ), 0 ),
+    ( "Diagnostic", NAMEOF ( 'dim_diagnostic'[libelle_diagnostic] ), 1 ),
+    ( "Spécialité", NAMEOF ( 'dim_professionnel'[specialite] ), 2 ),
+    ( "Sexe", NAMEOF ( 'dim_patient'[sexe] ), 3 ),
+    ( "Tranche d'âge", NAMEOF ( 'dim_tranche_age'[tranche_age] ), 4 ),
+    ( "Mois", NAMEOF ( 'dim_temps'[libelle_mois] ), 5 )
+}
+
+Mesure analyse = {
+    ( "Consultations", NAMEOF ( [Nb consultations] ), 0 ),
+    ( "Hospitalisations", NAMEOF ( [Nb hospitalisations] ), 1 ),
+    ( "Durée moyenne de séjour", NAMEOF ( [Durée moyenne séjour] ), 2 )
+}
+
+// Le nom de la colonne cachée (« Axe analyse Champs » en français,
+// « Axe analyse Fields » en anglais) est à vérifier dans le volet Données
+Titre analyse =
+VAR axe =
+    SELECTCOLUMNS (
+        SUMMARIZE ( 'Axe analyse', 'Axe analyse'[Axe analyse], 'Axe analyse'[Axe analyse Champs] ),
+        "Axe", 'Axe analyse'[Axe analyse]
+    )
+VAR mesure =
+    SELECTCOLUMNS (
+        SUMMARIZE ( 'Mesure analyse', 'Mesure analyse'[Mesure analyse], 'Mesure analyse'[Mesure analyse Champs] ),
+        "Mesure", 'Mesure analyse'[Mesure analyse]
+    )
+RETURN
+    IF (
+        COUNTROWS ( axe ) = 1 && COUNTROWS ( mesure ) = 1,
+        MAXX ( mesure, [Mesure] ) & " par " & LOWER ( MAXX ( axe, [Axe] ) ),
+        "Choisissez un axe et une mesure"
+    )

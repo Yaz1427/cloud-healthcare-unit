@@ -1,0 +1,34 @@
+{
+  "name": "CHU - Cloud Healthcare Unit",
+  "dataColors": ["#2A78D6", "#EB6834", "#1BAF7A", "#EDA100", "#7A5CC7", "#D64A6E", "#3BA4B8", "#8C8C8C"],
+  "background": "#FFFFFF",
+  "foreground": "#1F2937",
+  "tableAccent": "#2A78D6",
+  "good": "#1BAF7A",
+  "neutral": "#EDA100",
+  "bad": "#D64A6E",
+  "maximum": "#1B4F8F",
+  "center": "#8EBBEA",
+  "minimum": "#EAF2FB",
+  "null": "#D1D5DB",
+  "textClasses": {
+    "callout": { "fontSize": 28, "fontFace": "Segoe UI Semibold", "color": "#1F2937" },
+    "title": { "fontSize": 12, "fontFace": "Segoe UI Semibold", "color": "#1F2937" },
+    "header": { "fontSize": 12, "fontFace": "Segoe UI Semibold", "color": "#1F2937" },
+    "label": { "fontSize": 10, "fontFace": "Segoe UI", "color": "#4B5563" }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "title": [{ "show": true, "fontSize": 12, "fontColor": { "solid": { "color": "#1F2937" } } }],
+        "border": [{ "show": false }],
+        "background": [{ "show": true, "color": { "solid": { "color": "#FFFFFF" } }, "transparency": 0 }]
+      }
+    },
+    "page": {
+      "*": {
+        "background": [{ "color": { "solid": { "color": "#F3F5F8" } }, "transparency": 0 }]
+      }
+    }
+  }
+}
