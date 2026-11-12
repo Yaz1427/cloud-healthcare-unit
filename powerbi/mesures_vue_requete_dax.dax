@@ -1,0 +1,183 @@
+// =====================================================================
+// mesures_vue_requete_dax.dax : les mesures des parties 3 à 5 de mesures.dax
+//                               en un seul collage
+//
+// Accélérateur facultatif, après la partie 3.3 du guide (table _Mesures,
+// dim_tranche_age et colonnes calculées déjà créées).
+// 1. Vue Requête DAX (icône à gauche, sous la vue Modèle), nouvelle requête
+// 2. Colle tout ce fichier, puis Exécuter : une ligne de résultat s’affiche
+// 3. Clique le lien au-dessus de DEFINE, « Mettre à jour le modèle avec
+//    les modifications » (Update model with changes) : les mesures
+//    arrivent dans _Mesures. Restent les formats (partie 3.4).
+// « Titre analyse » se crée à la main en partie 7.4, après les paramètres
+// de champs. Sans vue Requête DAX : mesures une par une depuis mesures.dax.
+// =====================================================================
+DEFINE
+    MEASURE '_Mesures'[Nb consultations] =
+        SUM ( fait_consultation[nb_consultation] )
+
+    MEASURE '_Mesures'[Nb hospitalisations] =
+        SUM ( fait_hospitalisation[nb_hospitalisation] )
+
+    MEASURE '_Mesures'[Nb décès] =
+        SUM ( fait_deces[nb_deces] )
+
+    MEASURE '_Mesures'[Durée moyenne séjour] =
+        DIVIDE ( SUM ( fait_hospitalisation[duree_sejour] ), [Nb hospitalisations] )
+
+    MEASURE '_Mesures'[Âge moyen au décès] =
+        DIVIDE (
+            SUMX ( fait_deces, fait_deces[age_deces] * fait_deces[nb_deces] ),
+            CALCULATE ( [Nb décès], NOT ISBLANK ( fait_deces[age_deces] ) )
+        )
+
+    MEASURE '_Mesures'[Taux consultation établissement] =
+        DIVIDE (
+            [Nb consultations],
+            CALCULATE ( [Nb consultations], REMOVEFILTERS ( dim_etablissement ) )
+        )
+
+    MEASURE '_Mesures'[Taux consultation diagnostic] =
+        DIVIDE (
+            [Nb consultations],
+            CALCULATE ( [Nb consultations], REMOVEFILTERS ( dim_diagnostic ) )
+        )
+
+    MEASURE '_Mesures'[Patients hospitalisés] =
+        CALCULATE (
+            DISTINCTCOUNT ( fait_hospitalisation[id_patient] ),
+            KEEPFILTERS ( dim_patient[id_patient] <> -1 )
+        )
+
+    MEASURE '_Mesures'[Patients suivis] =
+        CALCULATE (
+            COUNTROWS (
+                DISTINCT (
+                    UNION (
+                        DISTINCT ( fait_consultation[id_patient] ),
+                        DISTINCT ( fait_hospitalisation[id_patient] )
+                    )
+                )
+            ),
+            KEEPFILTERS ( dim_patient[id_patient] <> -1 )
+        )
+
+    MEASURE '_Mesures'[Taux global hospitalisation] =
+        DIVIDE ( [Patients hospitalisés], [Patients suivis] )
+
+    MEASURE '_Mesures'[Taux hospitalisation diagnostic] =
+        DIVIDE (
+            [Nb hospitalisations],
+            CALCULATE ( [Nb hospitalisations], REMOVEFILTERS ( dim_diagnostic ) )
+        )
+
+    MEASURE '_Mesures'[Part des hospitalisations] =
+        DIVIDE (
+            [Nb hospitalisations],
+            CALCULATE (
+                [Nb hospitalisations],
+                REMOVEFILTERS ( dim_tranche_age ),
+                REMOVEFILTERS ( dim_patient[sexe] )
+            )
+        )
+
+    MEASURE '_Mesures'[Taux hospitalisation sexe] =
+        DIVIDE (
+            [Nb hospitalisations],
+            CALCULATE ( [Nb hospitalisations], REMOVEFILTERS ( dim_patient[sexe] ) )
+        )
+
+    MEASURE '_Mesures'[Taux hospitalisation tranche âge] =
+        DIVIDE (
+            [Nb hospitalisations],
+            CALCULATE ( [Nb hospitalisations], REMOVEFILTERS ( dim_tranche_age ) )
+        )
+
+    MEASURE '_Mesures'[Taux consultation professionnel] =
+        DIVIDE (
+            [Nb consultations],
+            CALCULATE ( [Nb consultations], REMOVEFILTERS ( dim_professionnel ) )
+        )
+
+    MEASURE '_Mesures'[Décès 2019] =
+        CALCULATE ( [Nb décès], REMOVEFILTERS ( dim_temps ), dim_temps[annee] = 2019 )
+
+    MEASURE '_Mesures'[Population 2019] =
+        SUM ( dim_region[population_2019] )
+
+    MEASURE '_Mesures'[Décès 2019 pour 100 000 hab.] =
+        DIVIDE ( [Décès 2019], [Population 2019] ) * 100000
+
+    MEASURE '_Mesures'[Satisfaction pondérée] =
+        DIVIDE (
+            SUMX (
+                fait_satisfaction,
+                fait_satisfaction[score_global] * fait_satisfaction[nb_repondants]
+            ),
+            CALCULATE (
+                SUM ( fait_satisfaction[nb_repondants] ),
+                NOT ISBLANK ( fait_satisfaction[score_global] )
+            )
+        )
+
+    MEASURE '_Mesures'[Satisfaction 2020] =
+        CALCULATE (
+            [Satisfaction pondérée],
+            REMOVEFILTERS ( dim_temps ),
+            dim_temps[annee] = 2020
+        )
+
+    MEASURE '_Mesures'[Répondants 2020] =
+        CALCULATE (
+            SUM ( fait_satisfaction[nb_repondants] ),
+            REMOVEFILTERS ( dim_temps ),
+            dim_temps[annee] = 2020
+        )
+
+    MEASURE '_Mesures'[Établissements notés 2020] =
+        CALCULATE (
+            COUNTROWS ( fait_satisfaction ),
+            REMOVEFILTERS ( dim_temps ),
+            dim_temps[annee] = 2020,
+            NOT ISBLANK ( fait_satisfaction[score_global] )
+        )
+
+    MEASURE '_Mesures'[Consultations N-1] =
+        CALCULATE (
+            [Nb consultations],
+            CALCULATETABLE (
+                SAMEPERIODLASTYEAR ( dim_temps[date_complete] ),
+                dim_temps[avec_donnees] = TRUE ()
+            )
+        )
+
+    MEASURE '_Mesures'[Évolution consultations] =
+        DIVIDE ( [Nb consultations] - [Consultations N-1], [Consultations N-1] )
+
+    MEASURE '_Mesures'[Hospitalisations N-1] =
+        CALCULATE (
+            [Nb hospitalisations],
+            CALCULATETABLE (
+                SAMEPERIODLASTYEAR ( dim_temps[date_complete] ),
+                dim_temps[avec_donnees] = TRUE ()
+            )
+        )
+
+    MEASURE '_Mesures'[Évolution hospitalisations] =
+        DIVIDE ( [Nb hospitalisations] - [Hospitalisations N-1], [Hospitalisations N-1] )
+
+    MEASURE '_Mesures'[Titre synthèse] =
+        VAR annee_choisie = SELECTEDVALUE ( dim_temps[annee] )
+        RETURN
+            IF ( ISBLANK ( annee_choisie ), "Sur la période", "En " & annee_choisie )
+                & " : "
+                & FORMAT ( [Taux global hospitalisation], "0.0 %" )
+                & " des patients suivis ont été hospitalisés"
+
+    MEASURE '_Mesures'[Titre décès] =
+        "Décès en 2019 : " & FORMAT ( [Décès 2019], "#,##0" )
+            & ", soit " & FORMAT ( [Décès 2019 pour 100 000 hab.], "0" )
+            & " pour 100 000 habitants"
+
+EVALUATE
+    ROW ( "Nb consultations", [Nb consultations], "Taux global hospitalisation", [Taux global hospitalisation] )

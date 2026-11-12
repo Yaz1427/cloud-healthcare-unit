@@ -2,13 +2,15 @@
 
 Ce guide construit, étape par étape, le tableau de bord de la soutenance : 6 pages pour la direction et les praticiens, plus 2 pages techniques. Il suit la maquette du PROSIT RETOUR 4, adaptée aux données réellement chargées. Compte 3 à 4 heures la première fois.
 
+> **Si le temps manque**, dans cet ordre : parties 1 à 4 (données, modèle, mesures, thème), puis les pages 1, 4, 5 et 6, puis les pages 2 et 3 ; les signets, le rôle de démonstration, la page d'extraction et le graphe paramétrable en dernier. Ce qui n'est pas construit n'est pas montré : prévenir celui qui présente, pour qu'il saute la phrase correspondante du dossier de soutenance.
+
 ## 0. Ce qu'il te faut
 
 | Élément | Où |
 |---|---|
 | Power BI Desktop à jour, en français | Microsoft Store ou site de Microsoft (gratuit, Windows seulement) |
-| Le dossier `donnees_powerbi` | Les fichiers `.tsv` exportés de la VM par Ayoub, plus `ref_departement.csv`, `ref_region.csv` et `population_region_2019.csv` |
-| Les fichiers de ce dossier `powerbi/` | `requetes_powerquery.m`, `mesures.dax`, `theme_chu.json`, `regions_france.topojson` |
+| Le dossier `donnees_powerbi` | Les fichiers `.tsv` de l'archive `export_powerbi.tar.gz` exportée de la VM (dans PowerShell : `tar -xzf export_powerbi.tar.gz`), plus `ref_departement.csv`, `ref_region.csv` et `population_region_2019.csv` |
+| Les fichiers de ce dossier `powerbi/` | `requetes_powerquery.m`, `mesures.dax`, `mesures_vue_requete_dax.dax`, `theme_chu.json`, `regions_france.topojson` |
 
 Mets tout le contenu de `donnees_powerbi` dans un seul dossier, par exemple `C:\chu\donnees_powerbi`.
 
@@ -59,7 +61,7 @@ Pourquoi des requêtes écrites à la main plutôt que l'assistant « Texte/CSV 
 | dim_temps | 11 323 |
 | dim_region | 19 |
 
-Les valeurs des décès, de la satisfaction et des établissements sont dans `controle_export.txt`, livré avec les données.
+Les nombres de lignes des décès, de la satisfaction et des établissements, et les valeurs attendues des cartes KPI, sont dans `controle_export.txt`, établi à partir des contrôles Impala du chargement.
 
 ## 3. Le modèle
 
@@ -104,7 +106,7 @@ Le fichier `mesures.dax` contient tout le code. Dans l'ordre :
 
 ### 3.4 Les mesures
 
-Sélectionne `_Mesures`, puis pour chaque mesure de `mesures.dax` (parties 3 à 5) : **Nouvelle mesure**, colle le code, **Entrée**. Ensuite, supprime la colonne `Masquer` de `_Mesures` : la table passe en tête du volet Données, avec l'icône de calculatrice.
+Sélectionne `_Mesures`, puis pour chaque mesure de `mesures.dax` (parties 3 à 5) : **Nouvelle mesure**, colle le code, **Entrée**. Plus rapide : `mesures_vue_requete_dax.dax` crée les 28 mesures d'un seul collage dans la **vue Requête DAX** (mode d'emploi en tête du fichier) ; `Titre analyse` se crée ensuite à la main, en partie 7.4. Ensuite, supprime la colonne `Masquer` de `_Mesures` : la table passe en tête du volet Données, avec l'icône de calculatrice.
 
 Formats, avec **Outils de mesure > Format** :
 
