@@ -34,7 +34,7 @@ rm -f "$SORTIE"/*.tsv "$SORTIE/export_powerbi.tar.gz"
 exporter() {
   local nom="$1" requete="$2"
   impala-shell -i "$HOTE" -d chu_dw -B --print_header -q "$requete" \
-    -o "$SORTIE/$nom.tsv" 2>> "$SORTIE/export.log"
+    -o "$SORTIE/$nom.tsv" 2>> "$SORTIE/export.log" || return 1
   echo "$nom : $(( $(wc -l < "$SORTIE/$nom.tsv") - 1 )) lignes"
 }
 
@@ -54,15 +54,18 @@ exporter fait_consultation \
   "SELECT id_temps, id_patient, id_professionnel, id_diagnostic, id_etablissement, age_patient, nb_consultation, annee FROM fait_consultation"
 exporter fait_hospitalisation \
   "SELECT id_temps, id_patient, id_diagnostic, id_etablissement, age_patient, duree_sejour, nb_hospitalisation, annee FROM fait_hospitalisation"
+# Décès et satisfaction : tant qu'ils ne sont pas chargés, l'export continue sans eux
 exporter fait_deces \
-  "SELECT (id_temps DIV 100) * 100 + 1 AS id_temps, id_region, sexe, age_deces, SUM(nb_deces) AS nb_deces, annee FROM fait_deces GROUP BY (id_temps DIV 100) * 100 + 1, id_region, sexe, age_deces, annee"
+  "SELECT (id_temps DIV 100) * 100 + 1 AS id_temps, id_region, sexe, age_deces, SUM(nb_deces) AS nb_deces, annee FROM fait_deces GROUP BY (id_temps DIV 100) * 100 + 1, id_region, sexe, age_deces, annee" \
+  || echo "fait_deces : table absente, export sans les décès"
 exporter fait_satisfaction \
-  "SELECT id_temps, id_etablissement, score_global, nb_repondants, annee FROM fait_satisfaction"
+  "SELECT id_temps, id_etablissement, score_global, nb_repondants, annee FROM fait_satisfaction" \
+  || echo "fait_satisfaction : table absente, export sans la satisfaction"
 
 # Contrôle : le total des décès agrégés doit égaler le nombre de lignes de fait_deces
 impala-shell -i "$HOTE" -d chu_dw -B -q \
   "SELECT annee, COUNT(*) FROM fait_deces GROUP BY annee ORDER BY annee" 2>> "$SORTIE/export.log" \
-  | sed 's/^/Décès en Gold, par année : /'
+  | sed 's/^/Décès en Gold, par année : /' || true
 
 cd "$SORTIE"
 tar -czf export_powerbi.tar.gz ./*.tsv
