@@ -16,6 +16,8 @@
 # dans DATA), HOTE (quickstart.cloudera)
 # =====================================================================
 set -euo pipefail
+# impala-shell (Python 2) plante sur les accents, « Île-de-France », sans UTF-8 forcé
+export PYTHONIOENCODING=utf-8
 
 ICI="$(cd "$(dirname "$0")" && pwd)"
 DATA="${DATA:-$(dirname "$ICI")/donnees}"

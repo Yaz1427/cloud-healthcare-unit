@@ -24,6 +24,8 @@
 # un canal public.
 # =====================================================================
 set -euo pipefail
+# impala-shell (Python 2) plante sur les accents, « Île-de-France », sans UTF-8 forcé
+export PYTHONIOENCODING=utf-8
 
 SORTIE="${1:-/home/cloudera/export_powerbi}"
 HOTE="${HOTE:-quickstart.cloudera}"
